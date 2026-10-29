@@ -15,6 +15,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,9 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.writerobsidian.AppIcon
 import app.writerobsidian.AppViewModel
 import app.writerobsidian.BuildConfig
 import app.writerobsidian.Screen
@@ -40,6 +44,9 @@ fun SettingsScreen(vm: AppViewModel, prefs: Prefs) {
     }
     var about by remember { mutableStateOf(false) }
     var sources by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var icon by remember { mutableStateOf(AppIcon.current(context)) }
+    var iconDialog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().background(c.background).verticalScroll(rememberScrollState())) {
         Text("Settings", color = c.text, fontSize = 26.sp, fontWeight = FontWeight.Medium, modifier = Modifier.statusBarsPadding().padding(start = 20.dp, top = 24.dp, bottom = 20.dp))
@@ -50,6 +57,7 @@ fun SettingsScreen(vm: AppViewModel, prefs: Prefs) {
 
         Category("Customize")
         Preference("Theme", "Theme style.") { vm.open(Screen.Customize) }
+        Preference("App icon", icon.label) { iconDialog = true }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().clickable { vm.setReadOnly(!prefs.readOnly) }.padding(start = 20.dp, end = 8.dp, top = 16.dp, bottom = 16.dp),
@@ -78,13 +86,40 @@ fun SettingsScreen(vm: AppViewModel, prefs: Prefs) {
             )
         }
     }
+    if (iconDialog) {
+        WriterDialog(onDismiss = { iconDialog = false }, title = "App icon", buttons = listOf("OK" to { iconDialog = false })) {
+            Column {
+                AppIcon.entries.forEach { option ->
+                    val choose = {
+                        AppIcon.set(context, option)
+                        icon = option
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().clickable(onClick = choose).padding(vertical = 4.dp),
+                    ) {
+                        RadioButton(
+                            selected = icon == option,
+                            onClick = choose,
+                            colors = RadioButtonDefaults.colors(selectedColor = c.text, unselectedColor = c.text),
+                        )
+                        Text(option.label, color = c.text, fontSize = 18.sp, modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+                Text(
+                    "Your launcher may take a moment to show the new icon, and may remove the app from your home screen; add it back from the app drawer.",
+                    color = c.secondary, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+        }
+    }
     if (sources) {
         WriterDialog(onDismiss = { sources = false }, title = "Open Sources", buttons = listOf("OK" to { sources = false })) {
             Text(
                 "AndroidX and Jetpack Compose — Apache License 2.0\n" +
                     "Kotlin coroutines — Apache License 2.0\n" +
-                    "Roboto, Roboto Mono — Apache License 2.0\n" +
-                    "Crimson Text — SIL Open Font License 1.1",
+                    "Fonts (24 Google Fonts families) — SIL Open Font License 1.1 or Apache License 2.0\n" +
+                    "App icon — © xeasec, from the original Writer",
                 color = c.text, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp),
             )
         }

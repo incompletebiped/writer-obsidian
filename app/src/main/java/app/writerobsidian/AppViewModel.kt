@@ -255,10 +255,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }.getOrDefault(emptyList())
     }
 
+    /** Imports into the vault folder itself; folders that already exist there are reused. */
     fun importWriterBackup(backup: Uri) = mutate("import the backup") { v, _ ->
-        val target = v.createFolder(v.root, "Writer import")
-        val result = WriterImport(getApplication(), v).import(backup, target)
-        message = "Imported ${result.notes} notes and ${result.folders} folders into \"${target.name}\"" +
+        val result = WriterImport(getApplication(), v).import(backup, v.root)
+        message = "Imported ${result.notes} notes and ${result.folders} folders" +
             if (result.skipped > 0) " (skipped ${result.skipped} empty)" else ""
     }
 

@@ -57,7 +57,7 @@ fun BackupScreen(vm: AppViewModel) {
         }
         Section(Icons.Filled.SdCard, "Restore from the old Writer app") {
             Text(
-                "Pick a WriterDb_….db backup (usually in WriterApp/Backup). Its notes are copied into a \"Writer import\" folder.",
+                "Pick the WriterDb_….db file made by the original app's Backup. Its notes and folders are copied into your vault.",
                 color = c.secondary, fontSize = 15.sp, modifier = Modifier.padding(start = 60.dp, end = 16.dp),
             )
             Action("Restore") { restore.launch(arrayOf("*/*")) }

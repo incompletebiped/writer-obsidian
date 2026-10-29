@@ -69,6 +69,10 @@ class Vault(private val context: Context, rootUri: Uri) {
         return parent.createDirectory(name) ?: error("Cannot create folder $name")
     }
 
+    /** The folder named [title] in [parent], created if there is none. */
+    fun folder(parent: DocumentFile, title: String): DocumentFile =
+        parent.findFile(sanitizeTitle(title))?.takeIf { it.isDirectory } ?: createFolder(parent, title)
+
     /** Renames to [title], adding a numeric suffix on collision. Returns false if the provider refused. */
     fun rename(entry: DocumentFile, parent: DocumentFile, title: String): Boolean {
         val extension = if (entry.isDirectory) "" else NOTE_EXTENSION

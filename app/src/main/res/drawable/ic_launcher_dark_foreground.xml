@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The original icon's round glasses, drawn flat in off-white for the dark icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Tinted lenses -->
+    <path
+        android:fillColor="#1AFFFFFF"
+        android:pathData="M40,54m-11,0a11,11 0,1 1,22 0a11,11 0,1 1,-22 0M68,54m-11,0a11,11 0,1 1,22 0a11,11 0,1 1,-22 0" />
+    <!-- Lens highlights -->
+    <path
+        android:strokeColor="#59FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M33.5,51.5a7,7 0,0 1,4.5 -4.6M61.5,51.5a7,7 0,0 1,4.5 -4.6" />
+    <!-- Rims, bridge and temples -->
+    <path
+        android:strokeColor="#FFF5F5F5"
+        android:strokeWidth="3.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M40,54m-11,0a11,11 0,1 1,22 0a11,11 0,1 1,-22 0M68,54m-11,0a11,11 0,1 1,22 0a11,11 0,1 1,-22 0M51,53.5Q54,49 57,53.5M29.2,51.5L21,50.5M78.8,51.5L87,50.5" />
+</vector>

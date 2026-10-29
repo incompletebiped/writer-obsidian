@@ -9,6 +9,9 @@ These files are not covered by this project's MIT License.
 like the one it continues. All rights belong to xeasec. If you are the author and
 want it removed, please open an issue and it will be replaced.
 
+The optional dark icon (`app/src/main/res/drawable/ic_launcher_dark_*.xml`) is a new
+drawing made for this project, based on the original icon's glasses.
+
 ## Fonts
 
 The 24 fonts in `app/src/main/res/font/` are the ones the original app offered. They are

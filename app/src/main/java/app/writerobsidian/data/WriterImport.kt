@@ -15,7 +15,8 @@ data class ImportResult(val notes: Int, val folders: Int, val skipped: Int)
  *
  * Schema (from the original app's Database class):
  * - `Items`: type 1 = folder, type 2 = document; `categoryId` is the parent folder id,
- *   0 for the top level. Writer 4.7 adds `path` and nested folders.
+ *   0 for the top level. Writer 4.7 adds `path` and nested folders, and may record an
+ *   item's folder only in `path` (categoryId 0, path "0/17/").
  * - `Texts`: one row per document, `fileId` → `Items.id`, `context` holds the body
  *   as the rich-text editor's HTML, converted here by [HtmlToMarkdown].
  *
@@ -42,17 +43,13 @@ class WriterImport(private val context: Context, private val vault: Vault) {
     }
 
     private fun convert(db: SQLiteDatabase, target: DocumentFile): ImportResult {
-        // Writer 4.7 nests folders: a folder's parent is its categoryId, and its `path`
-        // ("0/12/34/") lists its ancestors. 3.0.x has no path and only top-level folders.
-        val hasPath = db.hasColumn("Items", "path")
+        // 3.0.x has no path and only top-level folders.
+        val pathColumn = if (db.hasColumn("Items", "path")) "i.path" else "null"
         data class FolderRow(val name: String, val parent: Int)
         val rows = linkedMapOf<Int, FolderRow>()
-        val folderQuery = "select id, name, categoryId" + (if (hasPath) ", path" else "") + " from Items where type = 1 order by id"
-        db.rawQuery(folderQuery, null).use { c ->
+        db.rawQuery("select i.id, i.name, i.categoryId, $pathColumn from Items i where i.type = 1 order by i.id", null).use { c ->
             while (c.moveToNext()) {
-                val fromPath = if (hasPath) parentFromPath(c.getString(3), c.getInt(0)) else 0
-                val parent = c.getInt(2).takeIf { it != 0 } ?: fromPath
-                rows[c.getInt(0)] = FolderRow(c.getString(1).orEmpty(), parent)
+                rows[c.getInt(0)] = FolderRow(c.getString(1).orEmpty(), parentOf(c.getInt(2), c.getString(3), c.getInt(0)))
             }
         }
         val folders = mutableMapOf<Int, DocumentFile>()
@@ -61,7 +58,7 @@ class WriterImport(private val context: Context, private val vault: Vault) {
             val row = rows[id] ?: return target
             // A missing or cyclic parent puts the folder at the top level.
             val parent = if (row.parent == 0 || row.parent in seen || row.parent !in rows) target else folderFor(row.parent, seen + id)
-            return vault.createFolder(parent, row.name).also { folders[id] = it }
+            return vault.folder(parent, row.name).also { folders[id] = it }
         }
         rows.keys.forEach { folderFor(it) }
 
@@ -70,7 +67,7 @@ class WriterImport(private val context: Context, private val vault: Vault) {
         var notes = 0
         var skipped = 0
         val query = """
-            select i.categoryId, i.name, t.context
+            select i.categoryId, i.name, t.context, $pathColumn, i.id
             from Items i left join Texts t on t.fileId = i.id
             where i.type = 2
             order by max(coalesce(i.datetime, ''), coalesce(t.datetime, '')), i.id, t.id
@@ -84,7 +81,7 @@ class WriterImport(private val context: Context, private val vault: Vault) {
                     continue
                 }
                 // A document in a folder that no longer exists lands at the top level.
-                val parent = folders[c.getInt(0)] ?: target
+                val parent = folders[parentOf(c.getInt(0), c.getString(3), c.getInt(4))] ?: target
                 vault.createNote(parent, title, body)
                 notes++
             }
@@ -96,6 +93,10 @@ class WriterImport(private val context: Context, private val vault: Vault) {
         rawQuery("pragma table_info($table)", null).use { c ->
             generateSequence { if (c.moveToNext()) c.getString(1) else null }.any { it.equals(column, ignoreCase = true) }
         }
+
+    /** An item's folder: its categoryId, or else the last folder in its 4.7 `path`. */
+    private fun parentOf(categoryId: Int, path: String?, self: Int): Int =
+        categoryId.takeIf { it != 0 } ?: parentFromPath(path, self)
 
     /** The last folder id in a 4.7 path such as "0/12/34/", ignoring the item itself. */
     private fun parentFromPath(path: String?, self: Int): Int =

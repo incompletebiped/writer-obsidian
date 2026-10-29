@@ -37,7 +37,8 @@ All of these work the way they do in Writer 4.7.0:
     and 2 seconds after you stop typing. Opening a note without changing it never
     rewrites the file.
 - **Customize.** The 7 original themes, 31 text colors and 25 fonts.
-- **Settings.** Text size and read-only mode.
+- **Settings.** Text size, read-only mode, and the app icon: the original, or a dark
+  flat-square version.
 - **Print.** One note, or every note in a folder.
 - **Backup.** *Back up to memory card* saves a `.zip` of your notes. *Restore* imports a
   backup made by the original Writer app (see below).
@@ -66,9 +67,10 @@ Writer only saves files. Syncing is done by whatever syncs your vault. With
    Save the `WriterDb_<date>.db` file it shares, for example to Downloads.
 2. In this app, go to **☰ → Backup → RESTORE** and pick that file.
 
-Your notes and folders, including folders inside folders, are copied into a new
-**Writer import** folder in your vault. Formatting, colors and image references are
-converted to Markdown. Not carried over:
+Your notes and folders, including folders inside folders, are copied into your vault
+folder. If a folder with the same name already exists there, its notes go into it. A note
+whose name is already taken gets a number added, such as `Chapter 1 2.md`. Formatting,
+colors and image references are converted to Markdown. Not carried over:
 
 - **Dates.** Android doesn't let apps set a file's date, so notes are written in the
   order you last edited them; *Date* sort keeps the original order.
